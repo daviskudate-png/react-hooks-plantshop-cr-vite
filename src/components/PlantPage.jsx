@@ -1,56 +1,66 @@
-
 import React, { useState, useEffect } from "react";
 import NewPlantForm from "./NewPlantForm";
 import PlantList from "./PlantList";
 import Search from "./Search";
 
 function PlantPage() {
-  // Store all plants
+  // Store all plants fetched from the backend
   const [plants, setPlants] = useState([]);
 
-  // Store the search input
-  const [searchTerm, setSearchTerm] = useState("");
+  // Store the user's search input
+  const [searchQuery, setSearchQuery] = useState("");
 
-  // Fetch plants from the server
+  // Fetch plants when the component first loads
   useEffect(() => {
     fetch("http://localhost:6001/plants")
       .then((response) => response.json())
-      .then((data) => setPlants(data));
+      .then((data) => setPlants(data))
+      .catch((error) => console.error("Error fetching plants:", error));
   }, []);
 
-  // Add a new plant
-  function handleAddPlant(newPlant) {
+  // Add a new plant to the backend
+  const handleAddPlant = (newPlant) => {
     fetch("http://localhost:6001/plants", {
       method: "POST",
       headers: {
-        "Content-Type": "application/json"
+        "Content-Type": "application/json",
       },
-      body: JSON.stringify(newPlant)
+      body: JSON.stringify(newPlant),
     })
       .then((response) => response.json())
-      .then((newPlantFromServer) => {
-        setPlants((currentPlants) => [
-          ...currentPlants,
-          newPlantFromServer
-        ]);
-      });
-  }
+      .then((createdPlant) => {
+        setPlants((currentPlants) => [...currentPlants, createdPlant]);
+      })
+      .catch((error) => console.error("Error adding plant:", error));
+  };
 
-  // Filter plants based on search input
+  // Mark a plant as sold out
+  const handleSoldOut = (plantId) => {
+    setPlants((currentPlants) =>
+      currentPlants.map((plant) =>
+        plant.id === plantId ? { ...plant, soldOut: true } : plant
+      )
+    );
+  };
+
+  // Filter plants according to the search query
   const filteredPlants = plants.filter((plant) =>
-    plant.name.toLowerCase().includes(searchTerm.toLowerCase())
+    plant.name.toLowerCase().includes(searchQuery.toLowerCase())
   );
-
-  console.log("Total plants:", plants.length);
-console.log("Filtered plants:", filteredPlants.length);
 
   return (
     <main>
       <NewPlantForm onAddPlant={handleAddPlant} />
 
-      <Search onSearchChange={setSearchTerm} />
+      <Search
+        searchQuery={searchQuery}
+        onSearchChange={setSearchQuery}
+      />
 
-      <PlantList plants={filteredPlants} />
+      <PlantList
+        plants={filteredPlants}
+        onSoldOut={handleSoldOut}
+      />
     </main>
   );
 }
