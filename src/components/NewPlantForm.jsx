@@ -6,24 +6,24 @@ function NewPlantForm({ onAddPlant }) {
   function handleSubmit(event) {
     event.preventDefault();
 
-    // Get the form element
+
     const form = event.currentTarget.tagName === "FORM"
       ? event.currentTarget
       : event.currentTarget.form;
 
     const formData = new FormData(form);
 
-    // Create the new plant object
+  
     const newPlant = {
       name: formData.get("name"),
       image: formData.get("image"),
       price: formData.get("price")
     };
 
-    // Send the new plant to PlantPage
+  
     onAddPlant(newPlant);
 
-    // Clear the form
+  
     form.reset();
   }
 
